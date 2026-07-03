@@ -32,10 +32,7 @@ spring:
     locations: classpath:db/migration
 
 server:
-  # Puerto aleatorio: el microservicio nunca se expone directamente,
-  # solo se accede a traves del API Gateway.
   port: 0
-  forward-headers-strategy: framework
 
 eureka:
   client:
@@ -54,4 +51,3 @@ springdoc:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
-    operationsSorter: method

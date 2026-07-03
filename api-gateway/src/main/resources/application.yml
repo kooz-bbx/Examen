@@ -11,19 +11,6 @@ spring:
     gateway:
       server:
         webflux:
-          # IMPORTANTE (Spring Cloud 2025.x): las cabeceras X-Forwarded-* vienen
-          # deshabilitadas por defecto. Se activan configurando trusted-proxies
-          # con una expresion regular. Junto con server.forward-headers-strategy:
-          # framework en cada microservicio, esto hace que Swagger UI genere
-          # el boton "Execute" con la URL publica correcta (a traves del
-          # Gateway) en vez de la IP/puerto interno del microservicio.
-          # ".*" = confiar en cualquier origen (valido para entorno de
-          # desarrollo/examen; en produccion se restringiria a IPs conocidas).
-          trusted-proxies: ".*"
-          # Filtro global: añade cabecera X-Gateway-Source en todas las respuestas
-          default-filters:
-            - AddResponseHeader=X-Gateway-Source, RestaurantEnzo-Gateway
-
           routes:
             # ============================================================
             # RUTAS DE NEGOCIO
