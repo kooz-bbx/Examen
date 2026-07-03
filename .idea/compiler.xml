@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="api-gateway" />
+        <module name="eureka-service" />
+        <module name="config-server" />
+      </profile>
+      <profile name="Annotation profile for reservas-service" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.46/lombok-1.18.46.jar" />
+        </processorPath>
+        <module name="locales-service" />
+        <module name="envios-service" />
+        <module name="empleados-service" />
+        <module name="pagos-service" />
+        <module name="pedidos-service" />
+        <module name="clientes-service" />
+        <module name="reservas-service" />
+        <module name="productos-service" />
+        <module name="inventario-service" />
+        <module name="autenticacion-service" />
+      </profile>
+    </annotationProcessing>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="api-gateway" options="-parameters" />
+      <module name="autenticacion-service" options="-parameters" />
+      <module name="clientes-service" options="-parameters" />
+      <module name="config-server" options="-parameters" />
+      <module name="empleados-service" options="-parameters" />
+      <module name="envios-service" options="-parameters" />
+      <module name="eureka-service" options="-parameters" />
+      <module name="inventario-service" options="-parameters" />
+      <module name="locales-service" options="-parameters" />
+      <module name="pagos-service" options="-parameters" />
+      <module name="pedidos-service" options="-parameters" />
+      <module name="productos-service" options="-parameters" />
+      <module name="reservas-service" options="-parameters" />
+    </option>
+  </component>
+</project>

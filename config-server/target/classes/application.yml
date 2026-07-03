@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: config-server
+  profiles:
+    # Modo "native": el config-server lee los YAML directamente desde una
+    # carpeta del sistema de archivos (config-microservicios), sin depender
+    # de un repositorio Git externo. Esto evita que el servicio quede roto
+    # por una URL de Git de relleno y permite que funcione igual en Docker
+    # y en local.
+    active: native
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: ${CONFIG_SEARCH_LOCATIONS:file:./config-microservicios}
+
+server:
+  port: 8888
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${EUREKA_HOST:localhost}:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${random.value}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always

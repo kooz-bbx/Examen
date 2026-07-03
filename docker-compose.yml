@@ -1,0 +1,252 @@
+# ============================================================
+# docker-compose.yml - RestaurantEnzo (microservicios)
+# ============================================================
+# Levanta todo el ecosistema: MySQL, Eureka, Config Server, API Gateway
+# y los 10 microservicios de negocio.
+#
+# Uso:
+#   docker compose up -d --build      -> levanta todo
+#   docker compose logs -f api-gateway -> ver logs de un servicio
+#   docker compose down               -> apaga todo
+#   docker compose down -v            -> apaga y BORRA los datos de MySQL
+#
+# Unico puerto publicado hacia el host: 8080 (API Gateway).
+# Los microservicios internos NO publican puertos: solo se accede a ellos
+# a traves del Gateway, como exige la pauta.
+# ============================================================
+
+services:
+
+  # -------------------- Base de datos --------------------
+  mysql:
+    image: mysql:8.4
+    container_name: enzo-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Script de creacion automatica de las 10 bases (carpeta init-db,
+      # tal como exige la pauta).
+      - ./init-db:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - enzo-net
+
+  # -------------------- Infraestructura --------------------
+  eureka-service:
+    build:
+      context: ./eureka-service
+    container_name: enzo-eureka
+    restart: unless-stopped
+    environment:
+      EUREKA_HOSTNAME: eureka-service
+    networks:
+      - enzo-net
+
+  config-server:
+    build:
+      context: .
+      dockerfile: config-server/Dockerfile
+    container_name: enzo-config-server
+    restart: unless-stopped
+    environment:
+      EUREKA_HOST: eureka-service
+    depends_on:
+      - eureka-service
+    networks:
+      - enzo-net
+
+  # -------------------- API Gateway (unico puerto expuesto) --------------------
+  api-gateway:
+    build:
+      context: ./api-gateway
+    container_name: enzo-api-gateway
+    restart: unless-stopped
+    environment:
+      EUREKA_HOST: eureka-service
+      CONFIG_HOST: config-server
+    ports:
+      - "8080:8080"
+    depends_on:
+      - eureka-service
+      - config-server
+    networks:
+      - enzo-net
+
+  # -------------------- Microservicios de negocio --------------------
+  # Todos usan server.port=0 (puerto aleatorio) y NO publican puertos al
+  # host: solo se llega a ellos a traves del api-gateway.
+
+  autenticacion-service:
+    build:
+      context: ./autenticacion-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      EUREKA_HOST: eureka-service
+      CONFIG_HOST: config-server
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-service:
+        condition: service_started
+    networks:
+      - enzo-net
+
+  clientes-service:
+    build:
+      context: ./clientes-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      EUREKA_HOST: eureka-service
+      CONFIG_HOST: config-server
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-service:
+        condition: service_started
+    networks:
+      - enzo-net
+
+  empleados-service:
+    build:
+      context: ./empleados-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      EUREKA_HOST: eureka-service
+      CONFIG_HOST: config-server
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-service:
+        condition: service_started
+    networks:
+      - enzo-net
+
+  envios-service:
+    build:
+      context: ./envios-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      EUREKA_HOST: eureka-service
+      CONFIG_HOST: config-server
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-service:
+        condition: service_started
+    networks:
+      - enzo-net
+
+  inventario-service:
+    build:
+      context: ./inventario-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      EUREKA_HOST: eureka-service
+      CONFIG_HOST: config-server
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-service:
+        condition: service_started
+    networks:
+      - enzo-net
+
+  locales-service:
+    build:
+      context: ./locales-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      EUREKA_HOST: eureka-service
+      CONFIG_HOST: config-server
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-service:
+        condition: service_started
+    networks:
+      - enzo-net
+
+  pagos-service:
+    build:
+      context: ./pagos-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      EUREKA_HOST: eureka-service
+      CONFIG_HOST: config-server
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-service:
+        condition: service_started
+    networks:
+      - enzo-net
+
+  pedidos-service:
+    build:
+      context: ./pedidos-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      EUREKA_HOST: eureka-service
+      CONFIG_HOST: config-server
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-service:
+        condition: service_started
+    networks:
+      - enzo-net
+
+  productos-service:
+    build:
+      context: ./productos-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      EUREKA_HOST: eureka-service
+      CONFIG_HOST: config-server
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-service:
+        condition: service_started
+    networks:
+      - enzo-net
+
+  reservas-service:
+    build:
+      context: ./reservas-service
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      EUREKA_HOST: eureka-service
+      CONFIG_HOST: config-server
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-service:
+        condition: service_started
+    networks:
+      - enzo-net
+
+networks:
+  enzo-net:
+    driver: bridge
+
+volumes:
+  mysql_data:

@@ -1,0 +1,35 @@
+# Configuracion remota opcional para pedidos-service, servida por el Config Server
+# en modo nativo (carpeta config-microservicios). Solo se usa si el
+# microservicio activa spring.cloud.config.enabled=true; por defecto cada
+# servicio trae esta misma configuracion embebida en su propio
+# application.yml para poder funcionar de forma autonoma (modo hibrido).
+server:
+  port: 0
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${EUREKA_HOST:localhost}:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${random.value}
+
+spring:
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/bd_pedidos
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+  flyway:
+    enabled: true
+    baseline-on-migrate: true

@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS locales (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(150) NOT NULL,
+    direccion VARCHAR(255),
+    comuna VARCHAR(100),
+    horario VARCHAR(100),
+    activo BOOLEAN DEFAULT TRUE
+);

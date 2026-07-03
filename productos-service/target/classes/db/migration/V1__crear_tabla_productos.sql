@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS productos (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(150) NOT NULL,
+    precio DECIMAL(10,2) NOT NULL,
+    stock INT DEFAULT 0,
+    categoria VARCHAR(100),
+    disponible BOOLEAN DEFAULT TRUE
+);

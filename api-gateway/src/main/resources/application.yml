@@ -1,0 +1,235 @@
+spring:
+  application:
+    name: api-gateway
+
+  config:
+    import: optional:configserver:http://${CONFIG_HOST:localhost}:8888
+  cloud:
+    config:
+      enabled: false
+
+    gateway:
+      server:
+        webflux:
+          # IMPORTANTE (Spring Cloud 2025.x): las cabeceras X-Forwarded-* vienen
+          # deshabilitadas por defecto. Se activan configurando trusted-proxies
+          # con una expresion regular. Junto con server.forward-headers-strategy:
+          # framework en cada microservicio, esto hace que Swagger UI genere
+          # el boton "Execute" con la URL publica correcta (a traves del
+          # Gateway) en vez de la IP/puerto interno del microservicio.
+          # ".*" = confiar en cualquier origen (valido para entorno de
+          # desarrollo/examen; en produccion se restringiria a IPs conocidas).
+          trusted-proxies: ".*"
+          # Filtro global: añade cabecera X-Gateway-Source en todas las respuestas
+          default-filters:
+            - AddResponseHeader=X-Gateway-Source, RestaurantEnzo-Gateway
+
+          routes:
+            # ============================================================
+            # RUTAS DE NEGOCIO
+            # Nota: se corrigieron para que coincidan EXACTAMENTE con el
+            # @RequestMapping real de cada controlador (todas usan /api/v1/...).
+            # Antes algunas no coincidían (ej: pedidos, pagos, empleados,
+            # envios, inventario, locales, reservas, autenticacion) y por eso
+            # esos servicios no respondían a través del Gateway.
+            # ============================================================
+            - id: autenticacion-service
+              uri: lb://autenticacion-service
+              predicates:
+                - Path=/api/v1/usuarios/**
+              filters:
+                - AddRequestHeader=X-Origin-Gateway, true
+
+            - id: clientes-service
+              uri: lb://clientes-service
+              predicates:
+                - Path=/api/v1/clientes/**
+              filters:
+                - AddRequestHeader=X-Origin-Gateway, true
+
+            - id: productos-service
+              uri: lb://productos-service
+              predicates:
+                - Path=/api/v1/productos/**
+              filters:
+                - AddRequestHeader=X-Origin-Gateway, true
+
+            - id: pedidos-service
+              uri: lb://pedidos-service
+              predicates:
+                - Path=/api/v1/pedidos/**
+              filters:
+                - AddRequestHeader=X-Origin-Gateway, true
+
+            - id: reservas-service
+              uri: lb://reservas-service
+              predicates:
+                - Path=/api/v1/reservas/**
+              filters:
+                - AddRequestHeader=X-Origin-Gateway, true
+
+            - id: empleados-service
+              uri: lb://empleados-service
+              predicates:
+                - Path=/api/v1/empleados/**
+              filters:
+                - AddRequestHeader=X-Origin-Gateway, true
+
+            - id: locales-service
+              uri: lb://locales-service
+              predicates:
+                - Path=/api/v1/locales/**
+              filters:
+                - AddRequestHeader=X-Origin-Gateway, true
+
+            - id: envios-service
+              uri: lb://envios-service
+              predicates:
+                - Path=/api/v1/envios/**
+              filters:
+                - AddRequestHeader=X-Origin-Gateway, true
+
+            - id: inventario-service
+              uri: lb://inventario-service
+              predicates:
+                - Path=/api/v1/inventario/**
+              filters:
+                - AddRequestHeader=X-Origin-Gateway, true
+
+            - id: pagos-service
+              uri: lb://pagos-service
+              predicates:
+                - Path=/api/v1/pagos/**
+              filters:
+                - AddRequestHeader=X-Origin-Gateway, true
+
+            # ============================================================
+            # RUTAS DE DOCUMENTACION (Swagger / OpenAPI)
+            # El Gateway expone el /v3/api-docs de cada microservicio bajo
+            # /<servicio>/v3/api-docs y luego se los pasa a Swagger UI
+            # (ver springdoc.swagger-ui.urls mas abajo). Asi, el desplegable
+            # de Swagger UI del Gateway muestra TODOS los servicios activos.
+            # ============================================================
+            - id: autenticacion-service-docs
+              uri: lb://autenticacion-service
+              predicates:
+                - Path=/autenticacion-service/v3/api-docs
+              filters:
+                - RewritePath=/autenticacion-service/v3/api-docs, /v3/api-docs
+
+            - id: clientes-service-docs
+              uri: lb://clientes-service
+              predicates:
+                - Path=/clientes-service/v3/api-docs
+              filters:
+                - RewritePath=/clientes-service/v3/api-docs, /v3/api-docs
+
+            - id: productos-service-docs
+              uri: lb://productos-service
+              predicates:
+                - Path=/productos-service/v3/api-docs
+              filters:
+                - RewritePath=/productos-service/v3/api-docs, /v3/api-docs
+
+            - id: pedidos-service-docs
+              uri: lb://pedidos-service
+              predicates:
+                - Path=/pedidos-service/v3/api-docs
+              filters:
+                - RewritePath=/pedidos-service/v3/api-docs, /v3/api-docs
+
+            - id: reservas-service-docs
+              uri: lb://reservas-service
+              predicates:
+                - Path=/reservas-service/v3/api-docs
+              filters:
+                - RewritePath=/reservas-service/v3/api-docs, /v3/api-docs
+
+            - id: empleados-service-docs
+              uri: lb://empleados-service
+              predicates:
+                - Path=/empleados-service/v3/api-docs
+              filters:
+                - RewritePath=/empleados-service/v3/api-docs, /v3/api-docs
+
+            - id: locales-service-docs
+              uri: lb://locales-service
+              predicates:
+                - Path=/locales-service/v3/api-docs
+              filters:
+                - RewritePath=/locales-service/v3/api-docs, /v3/api-docs
+
+            - id: envios-service-docs
+              uri: lb://envios-service
+              predicates:
+                - Path=/envios-service/v3/api-docs
+              filters:
+                - RewritePath=/envios-service/v3/api-docs, /v3/api-docs
+
+            - id: inventario-service-docs
+              uri: lb://inventario-service
+              predicates:
+                - Path=/inventario-service/v3/api-docs
+              filters:
+                - RewritePath=/inventario-service/v3/api-docs, /v3/api-docs
+
+            - id: pagos-service-docs
+              uri: lb://pagos-service
+              predicates:
+                - Path=/pagos-service/v3/api-docs
+              filters:
+                - RewritePath=/pagos-service/v3/api-docs, /v3/api-docs
+
+server:
+  port: 8080
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${EUREKA_HOST:localhost}:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${random.value}
+
+# ============================================================
+# SWAGGER UI CENTRALIZADO DEL GATEWAY
+# Disponible en: http://localhost:8080/webjars/swagger-ui/index.html
+# El desplegable ("Select a definition") permite elegir cualquiera
+# de los 10 microservicios activos.
+# ============================================================
+springdoc:
+  enable-native-support: true
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    config-url: /v3/api-docs/swagger-config
+    urls:
+      - name: autenticacion-service
+        url: /autenticacion-service/v3/api-docs
+      - name: clientes-service
+        url: /clientes-service/v3/api-docs
+      - name: productos-service
+        url: /productos-service/v3/api-docs
+      - name: pedidos-service
+        url: /pedidos-service/v3/api-docs
+      - name: reservas-service
+        url: /reservas-service/v3/api-docs
+      - name: empleados-service
+        url: /empleados-service/v3/api-docs
+      - name: locales-service
+        url: /locales-service/v3/api-docs
+      - name: envios-service
+        url: /envios-service/v3/api-docs
+      - name: inventario-service
+        url: /inventario-service/v3/api-docs
+      - name: pagos-service
+        url: /pagos-service/v3/api-docs
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    reactor.netty.http.client: INFO

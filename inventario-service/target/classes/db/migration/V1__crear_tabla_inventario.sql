@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS inventario (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    producto_id BIGINT NOT NULL,
+    local_id BIGINT NOT NULL,
+    stock INT NOT NULL DEFAULT 0
+);
